@@ -1,7 +1,7 @@
 /* Shared code: settings, checklist items, offline storage, Google Sheet/Drive sync, PDF */
 const CONFIG={
   SCRIPT_URL:"https://script.google.com/macros/s/AKfycbwKrKZ-93Bq7KdYM8FQtv1SBGV9ZTIu02HYlXYIukQG9eFUxT10sF00ZgM7x0XgaO9ygg/exec", /* Apps Script > Deploy > Web app URL */
-  KEY:"change-this-secret"                    /* must match SECRET in Code.gs */
+  KEY:"Mahoora2026"                    /* must match SECRET in Code.gs */
 };
 const SECTIONS=[
 {part:"Tent / accommodation checklist",name:"Living Area",items:["Door lock / No gaps","Power supply light and switches","Fan","Room is clean - walls / floor and other items","All items are in the right place","Curtains"]},
