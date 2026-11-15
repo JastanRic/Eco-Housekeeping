@@ -55,10 +55,10 @@ function render(){
     nav.insertAdjacentHTML("beforeend",`<a href="#s${si}">${esc(sec.name)}</a>`);
     const p=document.createElement("section");p.className="panel";p.id="s"+si;
     p.innerHTML=`<div class="sh"><h3>${esc(sec.name)}</h3><button type="button" class="act sec allok">All ✓</button></div>`;
-    sec.items.forEach(it=>{
+    sec.items.forEach((it,ii)=>{
       const k=sec.name+" | "+it,st=S[k]||(S[k]={s:"",c:""});
       const row=document.createElement("div");row.className="item";
-      row.innerHTML=`<div class="nm">${esc(it)}</div><div class="ctl" role="group" aria-label="${esc(it)}"><button type="button" data-v="ok" aria-label="OK">✓</button><button type="button" data-v="issue" aria-label="Issue">✗</button><button type="button" data-v="na" aria-label="Not applicable">N/A</button></div><input class="cm" placeholder="Comment" aria-label="Comment for ${esc(it)}">`;
+      row.innerHTML=`<div class="nm">${iconHTML(sec,ii)}${esc(it)}</div><div class="ctl" role="group" aria-label="${esc(it)}"><button type="button" data-v="ok" aria-label="OK">✓</button><button type="button" data-v="issue" aria-label="Issue">✗</button><button type="button" data-v="na" aria-label="Not applicable">N/A</button></div><input class="cm" placeholder="Comment" aria-label="Comment for ${esc(it)}">`;
       const b=[...row.querySelectorAll("button")],cm=row.querySelector(".cm");
       PAINT[k]=()=>{b.forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.v===st.s)));row.dataset.s=st.s;cm.classList.toggle("hidden",!st.s);cm.value=st.c};
       b.forEach(x=>x.onclick=()=>{st.s=st.s===x.dataset.v?"":x.dataset.v;PAINT[k]();summary();keep();if(st.s==="issue")cm.focus()});
