@@ -1,6 +1,6 @@
 /* Shared code: settings, checklist items, offline storage, Google Sheet/Drive sync, PDF */
 const CONFIG={
-  SCRIPT_URL:"PASTE_GOOGLE_WEB_APP_URL_HERE", /* Apps Script > Deploy > Web app URL */
+  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbwKrKZ-93Bq7KdYM8FQtv1SBGV9ZTIu02HYlXYIukQG9eFUxT10sF00ZgM7x0XgaO9ygg/exec", /* Apps Script > Deploy > Web app URL */
   KEY:"change-this-secret"                    /* must match SECRET in Code.gs */
 };
 const SECTIONS=[
