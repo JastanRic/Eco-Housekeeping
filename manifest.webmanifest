@@ -1,9 +1,10 @@
 {
-  "name": "ECO Team Housekeeping Inspection",
-  "short_name": "ECO Housekeeping",
+  "name": "Mahoora Housekeeping Checklist",
+  "short_name": "Housekeeping",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#eef2ed",
-  "theme_color": "#174d35",
-  "description": "Offline-first tent housekeeping inspection checklist for ECO Team Wilpattu."
+  "background_color": "#edf1ec",
+  "theme_color": "#1b4332",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
 }

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1b4332">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="style.css">
+<title>Mahoora Housekeeping: Checklist</title>
+</head>
+<body>
+<header>
+  <div class="top"><div><div class="brand">MAHOORA</div><div class="sub">Guest room housekeeping checklist</div></div>
+  <div class="net"><span id="dot" class="dot off"></span><span id="net">Offline-ready</span></div></div>
+  <div class="who"><span id="who"></span><a href="index.html" id="change">Change</a></div>
+  <nav id="nav" aria-label="Sections"></nav>
+  <div class="bar"><i id="fill"></i></div>
+</header>
+<main>
+  <div id="work">
+    <div id="list"></div>
+    <h2>Finish</h2>
+    <section class="panel">
+      <label for="overall">Overall remarks</label>
+      <textarea id="overall" placeholder="Anything that needs follow-up"></textarea>
+      <div id="sum" class="small" style="margin-top:10px"></div>
+      <ul id="iss" class="iss"></ul>
+    </section>
+  </div>
+  <section class="panel done hidden" id="donePanel">
+    <div class="tick">✓</div>
+    <h1 style="margin:0">Inspection done</h1>
+    <p class="small" id="doneInfo"></p>
+    <p id="doneStatus" style="font-weight:600"></p>
+    <div class="row"><button class="act pri" id="shareBtn">Share PDF</button><button class="act sec" id="pdfBtn">Download PDF</button></div>
+    <div class="row"><button class="act sec" id="newBtn">Start new inspection</button></div>
+  </section>
+</main>
+<footer id="foot"><div><span class="cnt" id="cnt">0/0</span><button class="act pri" id="doneBtn">Done</button></div></footer>
+<div id="toast" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="app.js"></script>
+<script>
+const SES=getSession();
+if(!SES||!SES.tent){location.replace("index.html")}
+let S={},PAINT={},LAST=null;
+try{S=JSON.parse(localStorage.getItem("mhk_draft"))||{}}catch{}
+const keep=()=>localStorage.setItem("mhk_draft",JSON.stringify({...S,__overall:$("overall").value}));
+function render(){
+  const root=$("list"),nav=$("nav");let last="";
+  SECTIONS.forEach((sec,si)=>{
+    if(sec.part!==last&&si>0)root.insertAdjacentHTML("beforeend",`<h2>${esc(sec.part)}</h2>`);
+    last=sec.part;
+    nav.insertAdjacentHTML("beforeend",`<a href="#s${si}">${esc(sec.name)}</a>`);
+    const p=document.createElement("section");p.className="panel";p.id="s"+si;
+    p.innerHTML=`<div class="sh"><h3>${esc(sec.name)}</h3><button type="button" class="act sec allok">All ✓</button></div>`;
+    sec.items.forEach(it=>{
+      const k=sec.name+" | "+it,st=S[k]||(S[k]={s:"",c:""});
+      const row=document.createElement("div");row.className="item";
+      row.innerHTML=`<div class="nm">${esc(it)}</div><div class="ctl" role="group" aria-label="${esc(it)}"><button type="button" data-v="ok" aria-label="OK">✓</button><button type="button" data-v="issue" aria-label="Issue">✗</button><button type="button" data-v="na" aria-label="Not applicable">N/A</button></div><input class="cm" placeholder="Comment" aria-label="Comment for ${esc(it)}">`;
+      const b=[...row.querySelectorAll("button")],cm=row.querySelector(".cm");
+      PAINT[k]=()=>{b.forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.v===st.s)));row.dataset.s=st.s;cm.classList.toggle("hidden",!st.s);cm.value=st.c};
+      b.forEach(x=>x.onclick=()=>{st.s=st.s===x.dataset.v?"":x.dataset.v;PAINT[k]();summary();keep();if(st.s==="issue")cm.focus()});
+      cm.oninput=()=>{st.c=cm.value;keep()};
+      PAINT[k]();p.appendChild(row);
+    });
+    p.querySelector(".allok").onclick=()=>{sec.items.forEach(it=>{const k=sec.name+" | "+it;if(!S[k].s){S[k].s="ok";PAINT[k]()}});summary();keep()};
+    root.appendChild(p);
+  });
+}
+function summary(){
+  let ok=0,bad=0,na=0;const issues=[];
+  KEYS.forEach(k=>{const v=S[k];if(v.s==="ok")ok++;else if(v.s==="issue"){bad++;issues.push(k.replace(" | ",": "))}else if(v.s==="na")na++});
+  const done=ok+bad+na,n=KEYS.length;
+  $("cnt").textContent=done+"/"+n;$("fill").style.width=(done/n*100)+"%";
+  $("sum").textContent=`Marked ${done} of ${n} · ✓ ${ok} · ✗ ${bad} · N/A ${na}`;
+  $("iss").innerHTML=issues.map(i=>`<li>${esc(i)}</li>`).join("");
+}
+async function finish(){
+  const miss=KEYS.filter(k=>!S[k].s).length;
+  if(miss&&!confirm(miss+" items are not marked. Finish anyway?"))return;
+  const checks={};KEYS.forEach(k=>checks[k]={status:S[k].s,comment:(S[k].c||"").trim()});
+  const r={id:crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2),createdAt:new Date().toISOString(),
+    inspectionDate:SES.inspectionDate,tent:SES.tent,staff:SES.staff,inspector:SES.inspector,overall:$("overall").value.trim(),checks,syncStatus:"pending"};
+  await put(r);LAST=r;
+  localStorage.removeItem("mhk_draft");localStorage.removeItem("mhk_session");
+  $("work").classList.add("hidden");$("foot").classList.add("hidden");$("nav").classList.add("hidden");$("change").classList.add("hidden");
+  $("donePanel").classList.remove("hidden");
+  const bad=Object.values(checks).filter(x=>x.status==="issue").length;
+  $("doneInfo").textContent=`Tent ${r.tent} · ${r.inspectionDate.replace("T"," ")} · ${bad} issue${bad===1?"":"s"}`;
+  $("doneStatus").textContent="Saving to Google Sheet and Drive...";scrollTo(0,0);
+  await sync(false);status();
+}
+async function status(){
+  if(!LAST)return;const f=(await all()).find(x=>x.id===LAST.id);
+  $("doneStatus").textContent=f&&f.syncStatus==="synced"?"✓ Saved to Google Sheet and Google Drive.":"Saved on this phone. It will go to Google Sheet and Drive when internet is available.";
+}
+window.onSynced=status;
+$("doneBtn").onclick=finish;
+$("shareBtn").onclick=()=>LAST&&sharePDF(LAST);$("pdfBtn").onclick=()=>LAST&&savePDF(LAST);
+$("newBtn").onclick=()=>location.href="index.html";
+$("change").onclick=e=>{if(!confirm("Go back? Your ticks on this page are kept until you start a new inspection."))e.preventDefault()};
+(async()=>{
+  if(!SES||!SES.tent)return;
+  await openDB();
+  $("who").textContent=`Tent ${SES.tent} · ${SES.staff} · CM ${SES.inspector}`;
+  $("overall").value=S.__overall||"";$("overall").oninput=keep;delete S.__overall;
+  render();summary();net();registerSW();
+})();
+</script>
+</body>
+</html>
