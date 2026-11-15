@@ -31,13 +31,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="app.js"></script>
 <script>
-async function recs(){
-  const a=await all(),el=$("recs");
-  if(!a.length){el.innerHTML='<span class="small">No inspections yet.</span>';return}
-  el.innerHTML=a.slice(0,30).map(r=>{const bad=Object.values(r.checks).filter(x=>x.status==="issue").length,ok=r.syncStatus==="synced";
-    return`<div class="rec"><div><strong>Tent ${esc(r.tent)}</strong><div class="small">${esc((r.inspectionDate||"").replace("T"," "))} · ${esc(r.staff||"no staff name")} · ${bad} issue${bad===1?"":"s"}</div></div><span class="tag ${ok?"s":"p"}">${ok?"Sent":"Waiting"}</span></div>`}).join("");
-}
-window.onSynced=recs;
 $("f").onsubmit=e=>{
   e.preventDefault();
   const s={inspectionDate:$("when").value,tent:$("tent").value.trim(),staff:$("staff").value.trim(),inspector:$("insp").value.trim()};
@@ -46,11 +39,10 @@ $("f").onsubmit=e=>{
   localStorage.removeItem("mhk_draft");
   location.href="inspection.html";
 };
-$("syncBtn").onclick=async()=>{await sync(true);recs()};$("csvBtn").onclick=csv;
 (async()=>{
   await openDB();$("when").value=nowLocal();
   try{const l=JSON.parse(localStorage.getItem("mhk_last"));if(l){$("staff").value=l.staff||"";$("insp").value=l.inspector||""}}catch{}
-  net();await recs();sync(false).then(recs);registerSW();
+  net();sync(false);registerSW();
 })();
 </script>
 </body>
