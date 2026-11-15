@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#174d35">
+<link rel="manifest" href="manifest.webmanifest">
+<title>ECO Team Housekeeping Inspection</title>
+<style>
+:root{--green:#174d35;--green2:#246447;--cream:#f7f4e9;--ink:#1e2923;--muted:#66736b;--line:#d9e0d9;--red:#a33b32;--amber:#946200}
+*{box-sizing:border-box}body{margin:0;background:#eef2ed;color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:var(--green);color:white;padding:18px 16px 16px;position:sticky;top:0;z-index:5;box-shadow:0 2px 8px #0002}
+header .brand{font-size:12px;letter-spacing:.13em;opacity:.85;font-weight:700}header h1{font-size:20px;margin:4px 0 0}
+main{max-width:850px;margin:auto;padding:14px 12px 100px}
+.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 13px;box-shadow:0 1px 3px #193c2410}
+h2{font-size:17px;margin:0 0 12px;color:var(--green)}h3{font-size:15px;margin:0 0 8px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+label{display:block;font-size:13px;font-weight:650;color:#425148;margin:0 0 5px}
+input,select,textarea{width:100%;border:1px solid #cbd5cc;border-radius:9px;padding:11px 10px;font:inherit;background:#fff;color:var(--ink)}
+textarea{min-height:54px;resize:vertical}
+.field{min-width:0}.full{grid-column:1/-1}
+.item{border-top:1px solid #edf0ed;padding:11px 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start}
+.item:first-of-type{border-top:0}.item-name{font-weight:600;font-size:14px}.item-controls{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.choice{border:1px solid #cbd5cc;background:white;border-radius:8px;padding:7px 9px;font-size:12px;font-weight:700;min-width:48px}
+.choice[aria-pressed=true][data-v=ok]{background:#e3f3e9;border-color:#3b8c5c;color:#176239}
+.choice[aria-pressed=true][data-v=issue]{background:#fff0ed;border-color:#c56a60;color:#922e27}
+.choice[aria-pressed=true][data-v=na]{background:#edf0f2;border-color:#89949b;color:#4b5961}
+.item textarea{grid-column:1/-1;min-height:40px;font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+button{border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:700;cursor:pointer}
+.primary{background:var(--green);color:#fff}.secondary{background:#e7eee8;color:var(--green)}.danger{background:#fff0ed;color:var(--red)}
+.small{font-size:12px;color:var(--muted)}.status{display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:700;border-radius:99px;padding:5px 9px;background:#e7eee8;color:var(--green)}
+.dot{width:8px;height:8px;border-radius:50%;background:#2d9a5b}.dot.off{background:#c27a18}
+.record{border-top:1px solid var(--line);padding:10px 0}.record:first-child{border:0}
+.record strong{display:block}.record .small{margin-top:3px}
+.hidden{display:none!important}
+footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom));z-index:4}
+footer .inner{max-width:850px;margin:auto;display:flex;gap:8px}footer button{flex:1}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.item{grid-template-columns:1fr}.item-controls{justify-content:flex-start}.item textarea{grid-column:1}.item-name{padding-right:4px}}
+</style>
+</head>
+<body>
+<header><div class="brand">ECO TEAM • WILPATTU</div><h1>Housekeeping Inspection</h1></header>
+<main>
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px">
+      <h2 style="margin:0">New inspection</h2><span class="status"><span id="netDot" class="dot off"></span><span id="netText">Offline-ready</span></span>
+    </div>
+    <div class="grid">
+      <div class="field"><label for="inspectionDate">Date &amp; time</label><input id="inspectionDate" type="datetime-local"></div>
+      <div class="field"><label for="tent">Tent number</label><input id="tent" placeholder="e.g. B.16"></div>
+      <div class="field"><label for="staff">Housekeeper / service staff</label><input id="staff" placeholder="Staff name"></div>
+      <div class="field"><label for="inspector">Inspected by (CM)</label><input id="inspector" placeholder="Inspector name"></div>
+      <div class="field full"><label for="overall">Overall remarks</label><textarea id="overall" placeholder="General observations or follow-up required"></textarea></div>
+    </div>
+  </section>
+  <div id="checklist"></div>
+  <section class="panel">
+    <h2>Inspection summary</h2>
+    <div id="summary" class="small">Mark each item as OK, Issue or N/A.</div>
+  </section>
+  <section class="panel">
+    <h2>Saved inspections on this device</h2>
+    <p class="small">Records are saved on this phone while offline. They will sync to your shared server when internet is available and a sync server has been configured.</p>
+    <div class="actions" style="margin-bottom:8px">
+      <button class="secondary" id="syncBtn">Sync now</button>
+      <button class="secondary" id="exportBtn">Export CSV</button>
+      <button class="secondary" id="settingsBtn">Sync settings</button>
+    </div>
+    <div id="records"><span class="small">No saved inspections yet.</span></div>
+  </section>
+  <section class="panel hidden" id="settingsPanel">
+    <h2>Shared sync server</h2>
+    <p class="small">Enter the HTTPS API address supplied by your administrator. All staff phones must use the same server address. Without a server, inspections remain safely on each device and cannot be shared between phones.</p>
+    <label for="apiUrl">Sync API URL</label><input id="apiUrl" placeholder="https://your-server.example.com/api/inspections">
+    <label for="apiKey" style="margin-top:10px">Access key (optional)</label><input id="apiKey" type="password" placeholder="Access key">
+    <div class="actions" style="margin-top:10px"><button class="primary" id="saveSettings">Save settings</button><button class="secondary" id="closeSettings">Close</button></div>
+  </section>
+  <section class="panel">
+    <h2>Checklist reference</h2>
+    <p class="small">Based on the uploaded Mahoora Guest Room Housekeeping Checklist. “ECO cream hung” is retained as printed on the source form.</p>
+  </section>
+</main>
+<footer><div class="inner"><button class="secondary" id="resetBtn">Clear form</button><button class="primary" id="saveBtn">Save inspection</button></div></footer>
+<script>
+const GROUPS = [
+ {name:"Living Area",items:["Door lock / No Gaps","Power supply light and switches","Fan","Room is clean - walls / floor and other items","All items are in the right place","Curtains"]},
+ {name:"Bedroom",items:["Beds made","Other items in the right place","Linen clean and neat"]},
+ {name:"Washroom",items:["Clean and dust free","Shower area","No leaks / no water"]},
+ {name:"General",items:["Safety booklet in place","ECO cream hung","All carpets in place","Bino / Raincoats / umbrellas"]},
+ {name:"Outside",items:["Chairs, table rack / carpets / other","Floor sheet is clean","Fly sheets are good"]}
+];
+const DB_NAME="eco-housekeeping-db", STORE="inspections";
+let db;
+const state={};
+function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:"id"});s.createIndex("createdAt","createdAt")}};req.onsuccess=()=>{db=req.result;resolve(db)};req.onerror=()=>reject(req.error)})}
+function tx(mode="readonly"){return db.transaction(STORE,mode).objectStore(STORE)}
+function allRecords(){return new Promise((res,rej)=>{const r=tx().getAll();r.onsuccess=()=>res(r.result.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)));r.onerror=()=>rej(r.error)})}
+function putRecord(v){return new Promise((res,rej)=>{const r=tx("readwrite").put(v);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function updateRecord(v){return putRecord(v)}
+function makeId(){return (crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2))}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function renderChecklist(){
+ const root=document.getElementById("checklist");root.innerHTML="";
+ GROUPS.forEach((g,gi)=>{const sec=document.createElement("section");sec.className="panel";sec.innerHTML=`<h2>${esc(g.name)}</h2>`;g.items.forEach((name,ii)=>{const key=gi+"-"+ii;state[key]=state[key]||{status:"",comment:""};const item=document.createElement("div");item.className="item";item.innerHTML=`<div class="item-name">${esc(name)}</div><div class="item-controls"><button type="button" class="choice" data-v="ok" aria-pressed="false">OK</button><button type="button" class="choice" data-v="issue" aria-pressed="false">Issue</button><button type="button" class="choice" data-v="na" aria-pressed="false">N/A</button></div><textarea aria-label="Comment for ${esc(name)}" placeholder="Comments (optional)"></textarea>`;const buttons=item.querySelectorAll("button");buttons.forEach(b=>b.addEventListener("click",()=>{state[key].status=b.dataset.v;buttons.forEach(x=>x.setAttribute("aria-pressed",String(x===b)));summary()}));const ta=item.querySelector("textarea");ta.value=state[key].comment;ta.addEventListener("input",()=>state[key].comment=ta.value);sec.appendChild(item)});root.appendChild(sec)});
+}
+function summary(){let total=0,ok=0,issue=0,na=0;Object.values(state).forEach(v=>{if(v.status){total++;if(v.status==="ok")ok++;if(v.status==="issue")issue++;if(v.status==="na")na++}});document.getElementById("summary").textContent=`Marked ${total}/19 items • OK: ${ok} • Issues: ${issue} • N/A: ${na}${total<19?" • Complete all items before final sign-off.":""}`}
+function resetForm(){document.getElementById("tent").value="";document.getElementById("staff").value="";document.getElementById("inspector").value="";document.getElementById("overall").value="";GROUPS.forEach((g,gi)=>g.items.forEach((_,ii)=>state[gi+"-"+ii]={status:"",comment:""}));document.getElementById("inspectionDate").value=localDateTime();renderChecklist();summary()}
+function localDateTime(){const d=new Date(),pad=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`}
+function collect(){const tent=document.getElementById("tent").value.trim();if(!tent){alert("Please enter a tent number.");return null}const missing=Object.values(state).filter(v=>!v.status).length;if(missing){if(!confirm(`${missing} checklist items are not marked. Save this inspection anyway?`))return null}
+const checks={};GROUPS.forEach((g,gi)=>{checks[g.name]=g.items.map((name,ii)=>({item:name,status:state[gi+"-"+ii].status||"unmarked",comment:state[gi+"-"+ii].comment||""}))});
+return {id:makeId(),createdAt:new Date().toISOString(),inspectionDate:document.getElementById("inspectionDate").value,tent,staff:document.getElementById("staff").value.trim(),inspector:document.getElementById("inspector").value.trim(),overall:document.getElementById("overall").value.trim(),checks,syncStatus:"pending"}}
+}
+async function save(){const rec=collect();if(!rec)return;await putRecord(rec);alert("Inspection saved on this device.");resetForm();await showRecords();if(navigator.onLine)syncPending()}
+async function showRecords(){const records=await allRecords(),root=document.getElementById("records");if(!records.length){root.innerHTML='<span class="small">No saved inspections yet.</span>';return}root.innerHTML=records.map(r=>`<div class="record"><strong>Tent ${esc(r.tent)} · ${esc(r.inspectionDate||r.createdAt)}</strong><div class="small">${esc(r.staff||"Staff not entered")} · ${esc(r.inspector||"Inspector not entered")} · ${r.syncStatus==="synced"?"Synced":"Pending sync"}</div></div>`).join("")}
+async function syncPending(){const url=localStorage.getItem("ecoApiUrl");if(!url){alert("No sync server configured. Records remain saved on this phone.");return}if(!navigator.onLine){alert("No internet connection. Records will remain queued for later.");return}
+const key=localStorage.getItem("ecoApiKey")||"",records=await allRecords(),pending=records.filter(r=>r.syncStatus!=="synced");if(!pending.length){alert("All records are already synced.");return}
+let count=0;for(const r of pending){try{const resp=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json",...(key?{"Authorization":"Bearer "+key}:{})},body:JSON.stringify(r)});if(!resp.ok)throw new Error("HTTP "+resp.status);r.syncStatus="synced";r.syncedAt=new Date().toISOString();await updateRecord(r);count++}catch(e){console.error(e);break}}
+await showRecords();alert(`${count} inspection(s) synced. ${pending.length-count} remain queued.`)}
+function exportCSV(){allRecords().then(records=>{if(!records.length){alert("There are no records to export.");return}const rows=[["ID","Inspection date/time","Tent","Housekeeper/service staff","Inspected by CM","Section","Item","Status","Comment","Overall remarks","Sync status"]];records.forEach(r=>Object.entries(r.checks).forEach(([section,items])=>items.forEach(i=>rows.push([r.id,r.inspectionDate,r.tent,r.staff,r.inspector,section,i.item,i.status,i.comment,r.overall,r.syncStatus]))));const csv=rows.map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="eco-housekeeping-inspections.csv";a.click();URL.revokeObjectURL(a.href)})}
+document.getElementById("saveBtn").onclick=save;document.getElementById("resetBtn").onclick=()=>{if(confirm("Clear the current inspection form?"))resetForm()};document.getElementById("syncBtn").onclick=syncPending;document.getElementById("exportBtn").onclick=exportCSV;
+document.getElementById("settingsBtn").onclick=()=>document.getElementById("settingsPanel").classList.toggle("hidden");document.getElementById("closeSettings").onclick=()=>document.getElementById("settingsPanel").classList.add("hidden");
+document.getElementById("saveSettings").onclick=()=>{localStorage.setItem("ecoApiUrl",document.getElementById("apiUrl").value.trim());localStorage.setItem("ecoApiKey",document.getElementById("apiKey").value);alert("Sync settings saved on this phone.");document.getElementById("settingsPanel").classList.add("hidden")};
+window.addEventListener("online",()=>{setNet();syncPending()});window.addEventListener("offline",setNet);
+function setNet(){const online=navigator.onLine;document.getElementById("netDot").className="dot"+(online?"":" off");document.getElementById("netText").textContent=online?"Online":"Offline — saving locally"}
+(async()=>{await openDB();document.getElementById("inspectionDate").value=localDateTime();renderChecklist();summary();setNet();await showRecords();document.getElementById("apiUrl").value=localStorage.getItem("ecoApiUrl")||"";document.getElementById("apiKey").value=localStorage.getItem("ecoApiKey")||"";if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(console.warn)})();
+</script>
+</body></html>
