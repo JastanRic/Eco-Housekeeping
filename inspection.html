@@ -83,7 +83,7 @@ async function finish(){
   if(miss&&!confirm(miss+" items are not marked. Finish anyway?"))return;
   const checks={};KEYS.forEach(k=>checks[k]={status:S[k].s,comment:(S[k].c||"").trim()});
   const r={id:SES.id||(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2)),createdAt:new Date().toISOString(),
-    inspectionDate:SES.inspectionDate,tent:SES.tent,staff:SES.staff,inspector:SES.inspector,overall:$("overall").value.trim(),checks,syncStatus:"pending"};
+    inspectionDate:SES.inspectionDate,startedAt:SES.startedAt||"",tent:SES.tent,staff:SES.staff,inspector:SES.inspector,overall:$("overall").value.trim(),checks,syncStatus:"pending"};
   await put(r);LAST=r;
   localStorage.removeItem("mhk_draft");localStorage.removeItem("mhk_session");
   $("work").classList.add("hidden");$("foot").classList.add("hidden");$("nav").classList.add("hidden");$("change").classList.add("hidden");
