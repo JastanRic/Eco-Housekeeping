@@ -31,12 +31,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="app.js"></script>
 <script>
-$("f").onsubmit=e=>{
+$("f").onsubmit=async e=>{
   e.preventDefault();
-  const s={inspectionDate:$("when").value,tent:$("tent").value.trim(),staff:$("staff").value.trim(),inspector:$("insp").value.trim()};
+  const s={id:crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2),inspectionDate:$("when").value,tent:$("tent").value.trim(),staff:$("staff").value.trim(),inspector:$("insp").value.trim()};
   localStorage.setItem("mhk_session",JSON.stringify(s));
   localStorage.setItem("mhk_last",JSON.stringify({staff:s.staff,inspector:s.inspector}));
   localStorage.removeItem("mhk_draft");
+  const b=document.querySelector("#f button[type=submit]");b.disabled=true;b.textContent="Starting...";
+  await Promise.race([sendStart(s),new Promise(r=>setTimeout(r,4000))]);
   location.href="inspection.html";
 };
 (async()=>{
