@@ -33,6 +33,7 @@
     <h1 style="margin:0">Inspection done</h1>
     <p class="small" id="doneInfo"></p>
     <p id="doneStatus" style="font-weight:600"></p>
+    <div class="row"><button class="act sec hidden" id="retryBtn">Try sending again</button></div>
     <div class="row"><button class="act pri" id="shareBtn">Share PDF</button><button class="act sec" id="pdfBtn">Download PDF</button></div>
     <div class="row"><button class="act sec" id="newBtn">Start new inspection</button></div>
   </section>
@@ -81,7 +82,7 @@ async function finish(){
   const miss=KEYS.filter(k=>!S[k].s).length;
   if(miss&&!confirm(miss+" items are not marked. Finish anyway?"))return;
   const checks={};KEYS.forEach(k=>checks[k]={status:S[k].s,comment:(S[k].c||"").trim()});
-  const r={id:crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2),createdAt:new Date().toISOString(),
+  const r={id:SES.id||(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2)),createdAt:new Date().toISOString(),
     inspectionDate:SES.inspectionDate,tent:SES.tent,staff:SES.staff,inspector:SES.inspector,overall:$("overall").value.trim(),checks,syncStatus:"pending"};
   await put(r);LAST=r;
   localStorage.removeItem("mhk_draft");localStorage.removeItem("mhk_session");
@@ -93,11 +94,13 @@ async function finish(){
   await sync(false);status();
 }
 async function status(){
-  if(!LAST)return;const f=(await all()).find(x=>x.id===LAST.id);
-  $("doneStatus").textContent=f&&f.syncStatus==="synced"?"✓ Saved to Google Sheet and Google Drive.":"Saved on this phone. It will go to Google Sheet and Drive when internet is available.";
+  if(!LAST)return;const f=(await all()).find(x=>x.id===LAST.id),ok=f&&f.syncStatus==="synced";
+  $("doneStatus").textContent=ok?"✓ Saved to Google Sheet and Google Drive.":"Saved on this phone. Not sent yet"+(f&&f.lastError?": "+f.lastError:". It will send when internet is available.");
+  $("retryBtn").classList.toggle("hidden",!!ok);
 }
 window.onSynced=status;
 $("doneBtn").onclick=finish;
+$("retryBtn").onclick=async()=>{$("doneStatus").textContent="Sending...";await sync(false);status()};
 $("shareBtn").onclick=()=>LAST&&sharePDF(LAST);$("pdfBtn").onclick=()=>LAST&&savePDF(LAST);
 $("newBtn").onclick=()=>location.href="index.html";
 $("change").onclick=e=>{if(!confirm("Go back? Your ticks on this page are kept until you start a new inspection."))e.preventDefault()};
