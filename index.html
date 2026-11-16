@@ -33,7 +33,7 @@
 <script>
 $("f").onsubmit=async e=>{
   e.preventDefault();
-  const s={id:crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2),inspectionDate:$("when").value,tent:$("tent").value.trim(),staff:$("staff").value.trim(),inspector:$("insp").value.trim()};
+  const s={id:crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2),startedAt:nowFull(),inspectionDate:$("when").value,tent:$("tent").value.trim(),staff:$("staff").value.trim(),inspector:$("insp").value.trim()};
   localStorage.setItem("mhk_session",JSON.stringify(s));
   localStorage.setItem("mhk_last",JSON.stringify({staff:s.staff,inspector:s.inspector}));
   localStorage.removeItem("mhk_draft");
