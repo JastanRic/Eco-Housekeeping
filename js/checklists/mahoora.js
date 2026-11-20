@@ -1,66 +1,70 @@
-/* Mahoora inspection list: edit items here. pdf:"paper" = paper-style PDF with icons */
+/* Mahoora inspection list: edit items here.
+   "icons" = one icon name per item, in the SAME ORDER as "items".
+   pdf:"table" = table-style PDF (same as Big Game) */
 window.CHECKLISTS = window.CHECKLISTS || {};
 CHECKLISTS.mahoora = {
   name: "Mahoora",
   title: "MAHOORA GUEST ROOM HOUSEKEEPING CHECKLIST",
-  pdf: "paper",
+  pdf: "table",
   sections: [
-    {part:"Tent / accommodation checklist", name:"Living Area", items:[
-      "Door lock / No gaps",
-      "Power supply light and switches",
-      "Fan",
-      "Room is clean - walls / floor and other items",
-      "All items are in the right place",
-      "Curtains"
-    ]},
-    {part:"Tent / accommodation checklist", name:"Bedroom", items:[
-      "Beds made",
-      "Other items in the right place",
-      "Linen clean and neat"
-    ]},
-    {part:"Tent / accommodation checklist", name:"Washroom", items:[
-      "Clean and dust free",
-      "Shower area",
-      "No leaks / no water"
-    ]},
-    {part:"Tent / accommodation checklist", name:"General", items:[
-      "Safety booklet in place",
-      "ECO cream hung",
-      "All carpets in place",
-      "Bino / Raincoats / umbrellas"
-    ]},
-    {part:"Tent / accommodation checklist", name:"Outside", items:[
-      "Chairs, table rack / carpets / other",
-      "Floor sheet is clean",
-      "Fly sheets are good"
-    ]},
-    {part:"Item check list: bedroom and living room", name:"Bedroom & living room items", items:[
-      "Side table / table cloth",
-      "Floor cushions (1)",
-      "Pillows (4)",
-      "Oil canter / oil lamp",
-      "Bed throw cushions (2)",
-      "Bed sheets / cover",
-      "Bell",
-      "Bed runner",
-      "Furniture (chair, luggage rack)",
-      "Water bottles (2)",
-      "Light bulbs",
-      "Floor mats (2 for living and bed room)",
-      "Glasses and glass covers",
-      "Raincoats (2)",
-      "Bino",
-      "Safety booklet",
-      "Umbrellas",
-      "Eco cream wall hanger"
-    ]},
-    {part:"Bathroom checklist", name:"Bathroom items", items:[
-      "Carpets (03): commode, outside the shower and near the sink",
-      "All amenities",
-      "Towels",
-      "Hangers",
-      "Soap",
-      "Toilet roll"
-    ]}
+    {name:"Outside",
+     items:[
+       "Chair",
+       "Door mat",
+       "Door lock",
+       "Fly sheets",
+       "Surroundings clean"
+     ],
+     icons:["chair","mat","lock","tent","ground"]},
+    {name:"Living room",
+     items:[
+       "Fan",
+       "Room is clean - walls / floor",
+       "Side table",
+       "Cushions",
+       "Bed throw cushions",
+       "Oil canter / oil lamp"
+     ],
+     icons:["fan","sparkle","stable","cush","throw","lamp"]},
+    {name:"General",
+     items:[
+       "Fan",
+       "Power supply",
+       "Room is clean",
+       "Curtains",
+       "Clean and dust free",
+       "Safety booklet",
+       "ECO cream hung",
+       "Light lamp",
+       "Mosquito vaporizer",
+       "Binoculars",
+       "Umbrellas",
+       "Raincoats",
+       "Luggage table",
+       "Water bottles",
+       "Glasses & covers"
+     ],
+     icons:["fan","power","sparkle","curtains","broom","book","cream","bulb","vapor","bino","umb","coat","luggage","bottle","glass"]},
+    {name:"Bedroom",
+     items:[
+       "Beds made",
+       "Pillows",
+       "Bed throw pillows",
+       "Bedsheet / cover",
+       "Bed runner",
+       "Linen clean and neat"
+     ],
+     icons:["bed","pillow","throw","sheet","runner","layers"]},
+    {name:"Bathroom",
+     items:[
+       "Clean and dust free",
+       "Shower area clean",
+       "Carpets (commode, shower, sink, outside)",
+       "Soap",
+       "Toilet roll",
+       "No water leak",
+       "Hangers"
+     ],
+     icons:["broom","shower","carpet","soap","roll","droplet","hanger"]}
   ]
 };
