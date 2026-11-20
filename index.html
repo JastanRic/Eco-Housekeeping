@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1b4332">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg">
-<link rel="stylesheet" href="style.css">
-<title>Mahoora Housekeeping: Start</title>
+<link rel="icon" href="img/icon.svg">
+<link rel="stylesheet" href="css/style.css">
+<title>Housekeeping: Start</title>
 </head>
 <body>
 <header>
@@ -19,31 +19,53 @@
   <p class="small" style="margin:0 2px 12px">Fill in these details, then tick each section on the next page.</p>
   <form class="panel" id="f" autocomplete="off">
     <div class="grid">
+      <div>
+        <label for="prop">Section</label>
+        <select id="prop" required>
+          <option value="">Select section</option>
+          <option value="biggame">Big Game</option>
+          <option value="mahoora">Mahoora</option>
+          <option value="premium">Big Game Premium</option>
+        </select>
+      </div>
       <div><label for="when">Date &amp; time</label><input id="when" type="datetime-local" required></div>
       <div><label for="tent">Tent #</label><input id="tent" placeholder="e.g. B.16" required></div>
       <div><label for="staff">Housekeeper / service staff</label><input id="staff" placeholder="Name(s)" required></div>
       <div><label for="insp">Inspected by CM</label><input id="insp" placeholder="Inspector name" required></div>
     </div>
-    <button class="act pri big" type="submit" style="margin-top:14px">Start inspection</button>
+    <div class="row" style="margin-top:14px">
+      <button class="act sec big" type="button" id="clr" style="flex:1">Clear</button>
+      <button class="act pri big" type="submit" style="flex:2">Start inspection</button>
+    </div>
   </form>
 </main>
 <div id="toast" role="status"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="app.js"></script>
+<script src="js/checklists/mahoora.js"></script>
+<script src="js/checklists/biggame.js"></script>
+<script src="js/checklists/premium.js"></script>
+<script src="js/app.js"></script>
 <script>
 $("f").onsubmit=async e=>{
   e.preventDefault();
-  const s={id:crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2),startedAt:nowFull(),inspectionDate:$("when").value,tent:$("tent").value.trim(),staff:$("staff").value.trim(),inspector:$("insp").value.trim()};
+  const s={id:crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2),startedAt:nowFull(),property:$("prop").value,inspectionDate:$("when").value,tent:$("tent").value.trim(),staff:$("staff").value.trim(),inspector:$("insp").value.trim()};
   localStorage.setItem("mhk_session",JSON.stringify(s));
-  localStorage.setItem("mhk_last",JSON.stringify({staff:s.staff,inspector:s.inspector}));
+  localStorage.setItem("mhk_last",JSON.stringify({property:s.property,staff:s.staff,inspector:s.inspector}));
   localStorage.removeItem("mhk_draft");
   const b=document.querySelector("#f button[type=submit]");b.disabled=true;b.textContent="Starting...";
   await Promise.race([sendStart(s),new Promise(r=>setTimeout(r,4000))]);
   location.href="inspection.html";
 };
+$("clr").onclick=()=>{
+  $("f").reset();
+  $("prop").value="";
+  $("when").value=nowLocal();
+  localStorage.removeItem("mhk_last");
+  toast("Cleared");
+};
 (async()=>{
   await openDB();$("when").value=nowLocal();
-  try{const l=JSON.parse(localStorage.getItem("mhk_last"));if(l){$("staff").value=l.staff||"";$("insp").value=l.inspector||""}}catch{}
+  try{const l=JSON.parse(localStorage.getItem("mhk_last"));if(l){$("prop").value=l.property||"";$("staff").value=l.staff||"";$("insp").value=l.inspector||""}}catch{}
   net();sync(false);registerSW();
 })();
 </script>
