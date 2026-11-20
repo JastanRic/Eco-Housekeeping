@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1b4332">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg">
-<link rel="stylesheet" href="style.css">
+<link rel="icon" href="img/icon.svg">
+<link rel="stylesheet" href="css/style.css">
 <title>Mahoora Housekeeping: Checklist</title>
 </head>
 <body>
@@ -41,7 +41,10 @@
 <footer id="foot"><div><span class="cnt" id="cnt">0/0</span><button class="act pri" id="doneBtn">Done</button></div></footer>
 <div id="toast" role="status"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="app.js"></script>
+<script src="js/checklists/mahoora.js"></script>
+<script src="js/checklists/biggame.js"></script>
+<script src="js/checklists/premium.js"></script>
+<script src="js/app.js"></script>
 <script>
 const SES=getSession();
 if(!SES||!SES.tent){location.replace("index.html")}
@@ -83,7 +86,7 @@ async function finish(){
   if(miss&&!confirm(miss+" items are not marked. Finish anyway?"))return;
   const checks={};KEYS.forEach(k=>checks[k]={status:S[k].s,comment:(S[k].c||"").trim()});
   const r={id:SES.id||(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2)),createdAt:new Date().toISOString(),
-    inspectionDate:SES.inspectionDate,startedAt:SES.startedAt||"",tent:SES.tent,staff:SES.staff,inspector:SES.inspector,overall:$("overall").value.trim(),checks,syncStatus:"pending"};
+    inspectionDate:SES.inspectionDate,startedAt:SES.startedAt||"",property:SES.property||"mahoora",tent:SES.tent,staff:SES.staff,inspector:SES.inspector,overall:$("overall").value.trim(),checks,syncStatus:"pending"};
   await put(r);LAST=r;
   localStorage.removeItem("mhk_draft");localStorage.removeItem("mhk_session");
   $("work").classList.add("hidden");$("foot").classList.add("hidden");$("nav").classList.add("hidden");$("change").classList.add("hidden");
@@ -107,7 +110,7 @@ $("change").onclick=e=>{if(!confirm("Go back? Your ticks on this page are kept u
 (async()=>{
   if(!SES||!SES.tent)return;
   await openDB();
-  $("who").textContent=`Tent ${SES.tent} · ${SES.staff} · CM ${SES.inspector}`;
+  $("who").textContent=`${PROPERTY_NAMES[SES.property]||"Mahoora"} · Tent ${SES.tent} · ${SES.staff} · CM ${SES.inspector}`;
   $("overall").value=S.__overall||"";$("overall").oninput=keep;delete S.__overall;
   render();summary();net();registerSW();
 })();
