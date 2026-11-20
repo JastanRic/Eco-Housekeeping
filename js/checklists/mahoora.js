@@ -19,7 +19,7 @@ CHECKLISTS.mahoora = {
     {name:"Living room",
      items:[
        "Fan",
-       "Room is clean - walls / floor",
+       "Clean - walls / floor",
        "Side table",
        "Cushions",
        "Bed throw cushions",
