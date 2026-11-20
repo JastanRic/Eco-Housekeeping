@@ -1,6 +1,6 @@
-/* Big Game checklist: edit the items here, nothing else needs to change */
+/* Premium checklist: edit the items here, nothing else needs to change */
 window.CHECKLISTS = window.CHECKLISTS || {};
-CHECKLISTS.biggame = [
+CHECKLISTS.premium = [
   {part:"Big Game checklist", name:"Outside", items:[
     "Chair",
     "Door mate",
