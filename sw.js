@@ -1,5 +1,5 @@
-const C="mahoora-housekeeping-v3",PDFLIB="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-const F=["./","./index.html","./inspection.html","./app.js","./style.css","./manifest.webmanifest","./icon.svg"];
+const C="mahoora-housekeeping-v4",PDFLIB="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+const F=["./","./index.html","./inspection.html","./js/app.js","./js/checklists/mahoora.js","./js/checklists/biggame.js","./js/checklists/premium.js","./css/style.css","./manifest.webmanifest","./img/icon.svg"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(F).then(()=>c.add(new Request(PDFLIB,{mode:"cors"})).catch(()=>{}))))});
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
 self.addEventListener("fetch",e=>{
