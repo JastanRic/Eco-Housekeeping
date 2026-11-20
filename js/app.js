@@ -3,18 +3,15 @@ const CONFIG={
   SCRIPT_URL:"https://script.google.com/macros/s/AKfycbwKrKZ-93Bq7KdYM8FQtv1SBGV9ZTIu02HYlXYIukQG9eFUxT10sF00ZgM7x0XgaO9ygg/exec", /* Apps Script > Deploy > Web app URL */
   KEY:"Mahoora2026"                    /* must match SECRET in Code.gs */
 };
-const SECTIONS=[
-{part:"Tent / accommodation checklist",name:"Living Area",items:["Door lock / No gaps","Power supply light and switches","Fan","Room is clean - walls / floor and other items","All items are in the right place","Curtains"]},
-{part:"Tent / accommodation checklist",name:"Bedroom",items:["Beds made","Other items in the right place","Linen clean and neat"]},
-{part:"Tent / accommodation checklist",name:"Washroom",items:["Clean and dust free","Shower area","No leaks / no water"]},
-{part:"Tent / accommodation checklist",name:"General",items:["Safety booklet in place","ECO cream hung","All carpets in place","Bino / Raincoats / umbrellas"]},
-{part:"Tent / accommodation checklist",name:"Outside",items:["Chairs, table rack / carpets / other","Floor sheet is clean","Fly sheets are good"]},
-{part:"Item check list: bedroom and living room",name:"Bedroom & living room items",items:["Side table / table cloth","Floor cushions (1)","Pillows (4)","Oil canter / oil lamp","Bed throw cushions (2)","Bed sheets / cover","Bell","Bed runner","Furniture (chair, luggage rack)","Water bottles (2)","Light bulbs","Floor mats (2 for living and bed room)","Glasses and glass covers","Raincoats (2)","Bino","Safety booklet","Umbrellas","Eco cream wall hanger"]},
-{part:"Bathroom checklist",name:"Bathroom items",items:["Carpets (03): commode, outside the shower and near the sink","All amenities","Towels","Hangers","Soap","Toilet roll"]}
-];
+/* The checklists (items, PDF title, PDF format) live in js/checklists/*.js, one file per section */
+const CFG=p=>CHECKLISTS[p]||CHECKLISTS.mahoora||{name:"",title:"",pdf:"table",sections:[]};
+const PROPERTY_NAMES=Object.fromEntries(Object.entries(CHECKLISTS).map(([k,v])=>[k,v.name]));
+const keysOf=p=>{const a=[];CFG(p).sections.forEach(x=>x.items.forEach(i=>a.push(x.name+" | "+i)));return a};
+const PROP=(()=>{try{return JSON.parse(localStorage.getItem("mhk_session")).property}catch{return undefined}})();
+const SECTIONS=CFG(PROP).sections;   /* the list for the section chosen at login */
+const KEYS=keysOf(PROP);
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const KEYS=[];SECTIONS.forEach(s=>s.items.forEach(i=>KEYS.push(s.name+" | "+i)));
 let db,syncing=false;
 
 /* ---- offline storage ---- */
@@ -84,7 +81,7 @@ const ICON_LIST={
 "Bedroom & living room items":["stable","cush","pillow","lamp","throw","sheet","bell","runner","luggage","bottle","bulb","mat","glass","coat","bino","book","umb","cream"],
 "Bathroom items":["carpet","amen","towel","hanger","soap","roll"]
 };
-const iconsFor=(sec,i)=>((ICON_LIST[sec.name]||[])[i]||"").split(" ").filter(Boolean);
+const iconsFor=(sec,i,p)=>CFG(p===undefined?PROP:p).pdf!=="paper"?[]:((ICON_LIST[sec.name]||[])[i]||"").split(" ").filter(Boolean);
 const iconHTML=(sec,i)=>iconsFor(sec,i).map(k=>`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-4px;margin-right:5px">${ICONS[k]}</svg>`).join("");
 const ICONPNG={};let iconsP=null;
 function loadIcons(){
@@ -101,6 +98,7 @@ function loadIcons(){
 /* ---- PDF report (same layout as the paper forms) ---- */
 function makePDF(r){
   const J=window.jspdf;if(!J)return null;
+  const cfg=CFG(r.property);if(cfg.pdf!=="paper")return makeTablePDF(r,cfg);
   const doc=new J.jsPDF({unit:"mm",format:"a4"}),W=210,M=10;
   const st=k=>(r.checks[k]&&r.checks[k].status)||"",cmt=k=>(r.checks[k]&&r.checks[k].comment)||"";
   doc.setLineWidth(.25);doc.setDrawColor(70,70,70);
@@ -128,14 +126,14 @@ function makePDF(r){
 
   /* page 1: header + tent / accommodation checklist */
   doc.setFont("times","bold");doc.setFontSize(24);doc.setTextColor(27,67,50);doc.text("MAHOORA",W/2,17,{align:"center"});
-  title("MAHOORA GUEST ROOM HOUSEKEEPING CHECKLIST",27,12);
+  title(cfg.title,27,12);
   [["Date & Time",(r.inspectionDate||"").replace("T"," ")],["Housekeeper / Service staff",r.staff],["Inspected By CM",r.inspector],["Tent #",r.tent]].forEach(([a,b],i)=>{
     const y=40+i*8;doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(30,40,34);doc.text(a,14,y);
     doc.setFont("helvetica","bold");doc.text(String(b||""),66,y-.8);doc.setDrawColor(150,150,150);doc.line(64,y+1,W-14,y+1);
   });
   doc.setDrawColor(70,70,70);
   title("TENT / ACCOMMODATION CHECKLIST",78,11);
-  const col=names=>{const a=[];names.forEach(n=>{const sec=SECTIONS.find(s=>s.name===n);a.push({h:n});sec.items.forEach((it,i)=>a.push({it,k:n+" | "+it,ic:iconsFor(sec,i)}))});return a};
+  const col=names=>{const a=[];names.forEach(n=>{const sec=cfg.sections.find(s=>s.name===n);a.push({h:n});sec.items.forEach((it,i)=>a.push({it,k:n+" | "+it,ic:iconsFor(sec,i,r.property)}))});return a};
   const LC=col(["Living Area","Washroom"]),RC=col(["Bedroom","General","Outside"]),N=Math.max(LC.length,RC.length),RH=12,ty=82;
   [0,95].forEach(dx=>{hdr(M+dx,ty,62,8,"ITEM");hdr(M+dx+62,ty,33,8,"COMMENTS")});
   for(let i=0;i<N;i++){
@@ -150,21 +148,76 @@ function makePDF(r){
   /* page 2: bedroom and living room items + bathroom */
   doc.addPage();
   title("ITEM CHECK LIST FOR THE BEDROOM AND LIVING ROOM",16,11);
-  const BI=SECTIONS.find(s=>s.name==="Bedroom & living room items"),IW=44,CW=(190-3*IW)/3,t2=20;
+  const BI=cfg.sections.find(s=>s.name==="Bedroom & living room items"),IW=44,CW=(190-3*IW)/3,t2=20;
   [0,1,2].forEach(c=>{hdr(M+c*(IW+CW),t2,IW,8,"ITEM");hdr(M+c*(IW+CW)+IW,t2,CW,8,"COMMENTS")});
   for(let rw=0;rw<6;rw++)for(let c=0;c<3;c++){
     const i=rw*3+c,it=BI.items[i],x=M+c*(IW+CW),y=t2+8+rw*16,k=BI.name+" | "+it;
-    itemCell(x,y,IW,16,it,iconsFor(BI,i),k,5.5);comCell(x+IW,y,CW,16,k);
+    itemCell(x,y,IW,16,it,iconsFor(BI,i,r.property),k,5.5);comCell(x+IW,y,CW,16,k);
   }
   title("BATHROOM CHECKLIST",136,11);
-  const BS=SECTIONS.find(s=>s.name==="Bathroom items"),t3=140;
+  const BS=cfg.sections.find(s=>s.name==="Bathroom items"),t3=140;
   hdr(M,t3,120,8,"ITEM");hdr(M+120,t3,70,8,"COMMENTS");
-  BS.items.forEach((it,i)=>{const y=t3+8+i*12,k=BS.name+" | "+it;itemCell(M,y,120,12,it,iconsFor(BS,i),k,6);comCell(M+120,y,70,12,k)});
+  BS.items.forEach((it,i)=>{const y=t3+8+i*12,k=BS.name+" | "+it;itemCell(M,y,120,12,it,iconsFor(BS,i,r.property),k,6);comCell(M+120,y,70,12,k)});
   if(r.overall){
     const y=t3+8+6*12+10;doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(27,67,50);doc.text("Overall remarks",M,y);
     doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(30,40,34);doc.text(doc.splitTextToSize(r.overall,190).slice(0,8),M,y+5.5);
   }
   const p=doc.getNumberOfPages();for(let i=1;i<=p;i++){doc.setPage(i);doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(130,130,130);doc.text(`Tent ${r.tent}  |  page ${i} of ${p}`,W/2,291,{align:"center"})}
+  return doc;
+}
+/* ---- table-style PDF (Big Game, Big Game Premium, any new section) ---- */
+function makeTablePDF(r,cfg){
+  const J=window.jspdf,doc=new J.jsPDF({unit:"mm",format:"a4"}),W=210,M=10,IW=105,CW=85,BOT=282;
+  const st=k=>(r.checks[k]&&r.checks[k].status)||"",cmt=k=>(r.checks[k]&&r.checks[k].comment)||"";
+  doc.setLineWidth(.25);doc.setDrawColor(70,70,70);
+  const hdr=(x,y,w,h,t)=>{doc.setFillColor(236,236,236);doc.rect(x,y,w,h,"FD");doc.setFont("helvetica","bold");doc.setFontSize(8.5);doc.setTextColor(30,40,34);doc.text(t,x+w/2,y+h/2+1.2,{align:"center"})};
+  const mark=(s,bx,by)=>{
+    doc.setDrawColor(40,40,40);doc.setLineWidth(.3);doc.rect(bx,by,5,5);
+    if(s==="ok"){doc.setDrawColor(23,98,58);doc.setLineWidth(.7);doc.line(bx+1,by+2.7,bx+2.1,by+3.9);doc.line(bx+2.1,by+3.9,bx+4.2,by+1.1)}
+    else if(s==="issue"){doc.setDrawColor(166,58,48);doc.setLineWidth(.7);doc.line(bx+1,by+1,bx+4,by+4);doc.line(bx+4,by+1,bx+1,by+4)}
+    else if(s==="na"){doc.setFont("helvetica","bold");doc.setFontSize(4.5);doc.setTextColor(80,80,80);doc.text("N/A",bx+2.5,by+3.2,{align:"center"})}
+    doc.setDrawColor(70,70,70);doc.setLineWidth(.25);
+  };
+  /* header */
+  doc.setFont("times","bold");doc.setFontSize(24);doc.setTextColor(27,67,50);doc.text(String(cfg.name||"").toUpperCase(),W/2,17,{align:"center"});
+  doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(30,40,34);doc.text(doc.splitTextToSize(cfg.title||"",190),W/2,27,{align:"center"});
+  [["Date & Time",(r.inspectionDate||"").replace("T"," ")],["Housekeeper / Service staff",r.staff],["Inspected By CM",r.inspector],["Tent #",r.tent]].forEach(([a,b],i)=>{
+    const y=40+i*8;doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(30,40,34);doc.text(a,14,y);
+    doc.setFont("helvetica","bold");doc.text(String(b||""),66,y-.8);doc.setDrawColor(150,150,150);doc.line(64,y+1,W-14,y+1);
+  });
+  doc.setDrawColor(70,70,70);
+  let y=78;
+  const secHead=(name,more)=>{
+    doc.setFillColor(246,246,246);doc.rect(M,y,IW+CW,8,"FD");doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.setTextColor(30,40,34);
+    doc.text(name+(more?" (continued)":""),M+IW+CW/2,y+5.4,{align:"center"});y+=8;
+    hdr(M,y,IW,7,"ITEM");hdr(M+IW,y,CW,7,"COMMENTS");y+=7;
+  };
+  cfg.sections.forEach(sec=>{
+    if(y+8+7+9>BOT){doc.addPage();y=14}
+    secHead(sec.name,false);
+    sec.items.forEach(it=>{
+      const k=sec.name+" | "+it,c=cmt(k);
+      doc.setFont("helvetica","normal");doc.setFontSize(8.5);
+      const L=doc.splitTextToSize(it,IW-14);
+      doc.setFont("helvetica","italic");doc.setFontSize(7.5);
+      const CL=c?doc.splitTextToSize(c,CW-3):[];
+      const h=Math.max(9,L.length*3.8+3.4,CL.length*3.4+3.4);
+      if(y+h>BOT){doc.addPage();y=14;secHead(sec.name,true)}
+      doc.rect(M,y,IW,h);doc.rect(M+IW,y,CW,h);
+      doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(30,40,34);
+      doc.text(L,M+2,y+h/2+1-(L.length-1)*1.9);
+      mark(st(k),M+IW-7,y+h/2-2.5);
+      if(c){doc.setFont("helvetica","italic");doc.setFontSize(7.5);doc.setTextColor(...(st(k)==="issue"?[166,58,48]:[70,80,75]));doc.text(CL,M+IW+1.5,y+4)}
+      y+=h;
+    });
+    y+=6;
+  });
+  if(r.overall){
+    if(y+30>BOT){doc.addPage();y=14}
+    doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(27,67,50);doc.text("Overall remarks",M,y+4);
+    doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(30,40,34);doc.text(doc.splitTextToSize(r.overall,190).slice(0,10),M,y+10);
+  }
+  const p=doc.getNumberOfPages();for(let i=1;i<=p;i++){doc.setPage(i);doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(130,130,130);doc.text(`${cfg.name}  |  Tent ${r.tent}  |  page ${i} of ${p}`,W/2,291,{align:"center"})}
   return doc;
 }
 async function sharePDF(r){
@@ -188,7 +241,7 @@ const whyFailed=e=>{const m=String(e&&e.message||e);
 async function sendStart(s){
   if(CONFIG.SCRIPT_URL.startsWith("PASTE")||!navigator.onLine)return false;
   try{
-    const j=await(await fetch(CONFIG.SCRIPT_URL,{method:"POST",body:JSON.stringify({action:"start",key:CONFIG.KEY,id:s.id,tent:s.tent,staff:s.staff,inspector:s.inspector,inspectionDate:s.inspectionDate,startedAt:s.startedAt})})).json();
+    const j=await(await fetch(CONFIG.SCRIPT_URL,{method:"POST",body:JSON.stringify({action:"start",key:CONFIG.KEY,id:s.id,tent:s.tent,staff:s.staff,inspector:s.inspector,property:s.property,inspectionDate:s.inspectionDate,startedAt:s.startedAt})})).json();
     if(!j.ok)throw new Error(j.error||"rejected");return true;
   }catch(e){console.warn(e);SYNC_ERR=whyFailed(e);return false}
 }
@@ -199,7 +252,7 @@ async function sync(manual){
   const pend=(await all()).filter(r=>r.syncStatus!=="synced");let n=0;
   for(const r of pend){
     try{
-      const j=await(await fetch(CONFIG.SCRIPT_URL,{method:"POST",body:JSON.stringify({action:"finish",key:CONFIG.KEY,items:KEYS,...r})})).json();
+      const j=await(await fetch(CONFIG.SCRIPT_URL,{method:"POST",body:JSON.stringify({action:"finish",key:CONFIG.KEY,items:keysOf(r.property),...r})})).json();
       if(!j.ok)throw new Error(j.error||"rejected");
       r.syncStatus="synced";r.syncedAt=new Date().toISOString();r.pdfUrl=j.pdfUrl||"";r.lastError="";await put(r);n++;
     }catch(e){console.warn(e);SYNC_ERR=whyFailed(e);r.lastError=SYNC_ERR;await put(r);break}
