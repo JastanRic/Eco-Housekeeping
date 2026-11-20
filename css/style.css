@@ -25,7 +25,7 @@ textarea{min-height:56px;resize:vertical}
 input:focus-visible,textarea:focus-visible,button:focus-visible,nav a:focus-visible,.who a:focus-visible{outline:3px solid #f0a93b;outline-offset:1px}
 .item{display:grid;grid-template-columns:1fr auto;gap:7px 10px;align-items:center;padding:10px 0;border-top:1px solid #edf0ed}
 .item:first-of-type{border-top:0}
-.nm{font-size:15px;font-weight:500}
+.nm{font-size:15px;font-weight:500;display:flex;align-items:center}
 .ctl{display:flex;gap:6px}
 .ctl button{width:46px;height:42px;border:1.5px solid #bfcac1;background:#fff;border-radius:8px;font-size:19px;font-weight:700;color:#7a877f;padding:0;cursor:pointer}
 .ctl button[data-v=na]{font-size:12px;width:44px}
