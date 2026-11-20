@@ -70,7 +70,8 @@ hanger:'<path d="M12 4a2 2 0 1 1 2 2c-1 0-2 .7-2 2v1"/><path d="M12 9l9 6a1 1 0 
 amen:'<rect x="4" y="9" width="16" height="11" rx="2"/><path d="M8 9V5h8v4M10 14h4"/>',
 towel:'<path d="M6 3h12v6H6z"/><path d="M7 9v12h10V9"/><path d="M9 13h6M9 17h6"/>',
 soap:'<rect x="3" y="10" width="18" height="10" rx="4"/><circle cx="8" cy="5.5" r="1.5"/><circle cx="14" cy="4.5" r="1"/><circle cx="17" cy="7" r="1.2"/>',
-roll:'<ellipse cx="8" cy="12" rx="3" ry="8"/><path d="M8 4h9c2 0 3 4 3 8s-1 8-3 8H8"/>'
+roll:'<ellipse cx="8" cy="12" rx="3" ry="8"/><path d="M8 4h9c2 0 3 4 3 8s-1 8-3 8H8"/>',
+vapor:'<rect x="7" y="11" width="10" height="8" rx="2"/><path d="M10 19v2.5M14 19v2.5"/><path d="M9.5 8c-1-1.2 1-2.2 0-3.5M14.5 8c-1-1.2 1-2.2 0-3.5"/>'
 };
 const ICON_LIST={
 "Living Area":["lock","power","fan","sparkle","cube","curtains"],
@@ -81,8 +82,8 @@ const ICON_LIST={
 "Bedroom & living room items":["stable","cush","pillow","lamp","throw","sheet","bell","runner","luggage","bottle","bulb","mat","glass","coat","bino","book","umb","cream"],
 "Bathroom items":["carpet","amen","towel","hanger","soap","roll"]
 };
-const iconsFor=(sec,i,p)=>CFG(p===undefined?PROP:p).pdf!=="paper"?[]:((ICON_LIST[sec.name]||[])[i]||"").split(" ").filter(Boolean);
-const iconHTML=(sec,i)=>iconsFor(sec,i).map(k=>`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-4px;margin-right:5px">${ICONS[k]}</svg>`).join("");
+const iconsFor=(sec,i,p)=>sec.icons?(sec.icons[i]||"").split(" ").filter(Boolean):CFG(p===undefined?PROP:p).pdf!=="paper"?[]:((ICON_LIST[sec.name]||[])[i]||"").split(" ").filter(Boolean);
+const iconHTML=(sec,i)=>iconsFor(sec,i).map(k=>`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-right:7px">${ICONS[k]}</svg>`).join("");
 const ICONPNG={};let iconsP=null;
 function loadIcons(){
   if(iconsP)return iconsP;
