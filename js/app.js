@@ -128,7 +128,7 @@ function makePDF(r){
   /* page 1: header + tent / accommodation checklist */
   doc.setFont("times","bold");doc.setFontSize(24);doc.setTextColor(27,67,50);doc.text("MAHOORA",W/2,17,{align:"center"});
   title(cfg.title,27,12);
-  [["Date & Time",(r.inspectionDate||"").replace("T"," ")],["Housekeeper / Service staff",r.staff],["Inspected By CM",r.inspector],["Tent #",r.tent]].forEach(([a,b],i)=>{
+  [["Section",cfg.name],["Date & time",(r.inspectionDate||"").replace("T"," ")],["Tent",r.tent],["Housekeeper / Service Staff",r.staff],["Inspected by",r.inspector]].forEach(([a,b],i)=>{
     const y=40+i*8;doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(30,40,34);doc.text(a,14,y);
     doc.setFont("helvetica","bold");doc.text(String(b||""),66,y-.8);doc.setDrawColor(150,150,150);doc.line(64,y+1,W-14,y+1);
   });
@@ -182,15 +182,15 @@ function makeTablePDF(r,cfg){
   /* header */
   doc.setFont("times","bold");doc.setFontSize(24);doc.setTextColor(27,67,50);doc.text(String(cfg.name||"").toUpperCase(),W/2,17,{align:"center"});
   doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(30,40,34);doc.text(doc.splitTextToSize(cfg.title||"",190),W/2,27,{align:"center"});
-  [["Date & Time",(r.inspectionDate||"").replace("T"," ")],["Housekeeper / Service staff",r.staff],["Inspected By CM",r.inspector],["Tent #",r.tent]].forEach(([a,b],i)=>{
+  [["Section",cfg.name],["Date & time",(r.inspectionDate||"").replace("T"," ")],["Tent",r.tent],["Housekeeper / Service Staff",r.staff],["Inspected by",r.inspector]].forEach(([a,b],i)=>{
     const y=40+i*8;doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(30,40,34);doc.text(a,14,y);
     doc.setFont("helvetica","bold");doc.text(String(b||""),66,y-.8);doc.setDrawColor(150,150,150);doc.line(64,y+1,W-14,y+1);
   });
   doc.setDrawColor(70,70,70);
-  let y=78;
+  let y=86;
   const secHead=(name,more)=>{
-    doc.setFillColor(246,246,246);doc.rect(M,y,IW+CW,8,"FD");doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.setTextColor(30,40,34);
-    doc.text(name+(more?" (continued)":""),M+IW+CW/2,y+5.4,{align:"center"});y+=8;
+    doc.setFillColor(208,208,208);doc.rect(M,y,IW+CW,8,"FD");doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.setTextColor(30,40,34);
+    doc.text(name+(more?" (continued)":""),M+(IW+CW)/2,y+5.4,{align:"center"});y+=8;
     hdr(M,y,IW,7,"ITEM");hdr(M+IW,y,CW,7,"COMMENTS");y+=7;
   };
   cfg.sections.forEach(sec=>{
